@@ -1,38 +1,40 @@
-name: Package on Release
+name: Release Automation
 
 on:
-  release:
-    types: [created]  # Triggers only on non-draft release publish
+  push:
+    branches:
+      - main
 
 permissions:
-  contents: write  # For uploading assets to release
+  contents: write
+  id-token: write   # Needed for PyPI trusted publishing
 
 jobs:
-  package:
+  release:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: "3.x"
 
-      - name: Install build tools
-        run: python -m pip install --upgrade pip build
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build python-semantic-release
+
+      - name: Run semantic release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: semantic-release publish
 
       - name: Build package
-        run: python -m build --sdist --wheel
+        run: python -m build
 
-      - name: List dist contents
-        run: ls -la dist/
-
-      - name: Upload assets to release
-        env:
-          GITHUB_TOKEN: ${{ secrets.gha}}
-        run: |
-          gh release upload ${{ github.event.release.tag_name }} \
-            dist/*.whl \
-            dist/*.tar.gz \
-            --clobber
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

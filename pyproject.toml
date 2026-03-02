@@ -1,12 +1,18 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["setuptools>=61", "setuptools_scm"]
+build-backend = "setuptools.build_meta"
 
 [project]
-name = "student-cli-tool"
-version = "0.1.0"
-description = "Simple CLI tool for students"
-requires-python = ">=3.8"
-dependencies = ["click"]
-[project.scripts]
-student-cli-tool = "student_cli_tool.cli:hello"
+name = "students cli-tools"
+dynamic = ["version"]
+
+[tool.setuptools_scm]
+version_scheme = "no-guess-dev"
+local_scheme = "no-local-version"
+
+[tool.semantic_release]
+version_variable = "pyproject.toml:version"
+branch = "main"
+upload_to_pypi = false
+upload_to_release = false
+build_command = "python -m build"
